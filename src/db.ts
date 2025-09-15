@@ -25,7 +25,7 @@ const users: User[] = [
 ]
 
 const articles: Article[] = [ 
-    {id: 'a1', title: 'How I made Amazong', body: 'Amazong found opens about how he made the biggest online retialer in the world', authorId: '1'},
+    {id: 'a1', title: 'How I made Amazon', body: 'Amazon found opens about how he made the biggest online retialer in the world', authorId: '1'},
     {id: 'a2', title: 'Jem Finch speaks up', body: 'Jem Finch, the kid who was attacked by late Bob Ewell speaks up on what happened on the town paegent day', authorId: '2'},  
 ]
 
