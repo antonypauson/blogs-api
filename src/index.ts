@@ -12,6 +12,14 @@ app.get("/articles", (req: Request, res: Response) => {
     res.json(db.articles); 
 });
 
+app.get("/users", (req: Request, res: Response) => {
+    res.json(db.users); 
+})
+
+app.get("/comments", (req: Request, res: Response) => {
+    res.json(db.comments); 
+})
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
