@@ -26,6 +26,7 @@ app.get("/articles/:id", (req: Request, res: Response) => {
   }
 });
 
+//post: new article 
 app.post('/articles', (req: Request, res: Response) => {
   //extract these from the request body
   const {title, body, authorId} = req.body; 
@@ -37,7 +38,7 @@ app.post('/articles', (req: Request, res: Response) => {
 
   //create new article object
   const newArticle = {
-    id: `${Date.now()}`, 
+    id: `a${Date.now()}`, //'a' because we need to use Date.now() as id for others
     title: title,
     body: body, 
     authorId: authorId,
@@ -67,6 +68,29 @@ app.get("/users/:id", (req: Request, res: Response) => {
   }
 });
 
+//post: new user
+app.post('/users', (req: Request, res: Response) => {
+  //take name from the client
+  const {name} = req.body; 
+
+  //verify its there
+  if (!name) {
+    return res.status(400).json({error: 'Name is missing'}); 
+  }
+
+  //create new user object
+  const newUser = {
+    id: `u${Date.now()}`, 
+    name: name
+  }
+
+  //add it
+  db.users.push(newUser); 
+
+  //output + status code
+  res.status(201).json(newUser); 
+})
+
 //COMMENTS
 app.get("/comments", (req: Request, res: Response) => {
   res.json(db.comments);
@@ -82,6 +106,31 @@ app.get("/comments/:id", (req: Request, res: Response) => {
         res.status(404).json({error: "Comment not found"})
     }
 });
+
+//post: new comment
+app.post('/comments', (req: Request, res: Response) => {
+  //take data from client
+  const {text, authorId, articleId} = req.body; 
+
+  //verify its there
+  if (!text || !authorId || !articleId) {
+    return res.status(400).json({error: 'Data missing'}); 
+  }
+
+  //create comment object
+  const newComment = {
+    id: `c${Date.now()}`, 
+    text: text, 
+    authorId: authorId, 
+    articleId: articleId
+  }
+
+  //add it
+  db.comments.push(newComment); 
+
+  //output + status code
+  res.status(201).json(newComment); 
+})
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
