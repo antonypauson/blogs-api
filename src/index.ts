@@ -4,6 +4,9 @@ import { db } from "./db.js";
 const app = express();
 const PORT = 3000;
 
+//middlewares
+app.use(express.json()); 
+
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello TypeScript World!");
 });
@@ -22,6 +25,31 @@ app.get("/articles/:id", (req: Request, res: Response) => {
     res.status(404).json({ error: "Article not found" });
   }
 });
+
+app.post('/articles', (req: Request, res: Response) => {
+  //extract these from the request body
+  const {title, body, authorId} = req.body; 
+
+  //make sure its there
+  if (!title || !body || !authorId) {
+    return res.status(400).json({error: 'Some data from the client is missing'})
+  }
+
+  //create new article object
+  const newArticle = {
+    id: `${Date.now()}`, 
+    title: title,
+    body: body, 
+    authorId: authorId,
+  }; 
+
+  //add it to db. 
+  db.articles.push(newArticle); 
+
+  //201: created
+  //then we display teh json of newArticle
+  res.status(201).json(newArticle)
+})
 
 //USERS
 app.get("/users", (req: Request, res: Response) => {
