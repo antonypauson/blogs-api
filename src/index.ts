@@ -160,6 +160,23 @@ app.patch("/users/:id", (req: Request, res: Response) => {
   res.json(user);
 });
 
+//delete a user
+app.delete('/users/:id', (req: Request, res: Response) => {
+  //get that user
+  const user = db.users.find(user => user.id === req.params.id); 
+
+  //verify
+  if (!user) {
+    return res.status(404).json({error: 'Requested User does not exist'});
+  }
+
+  //delete from array
+  db.users = db.users.filter(user => user.id !== req.params.id); 
+
+  //resposne
+  res.status(204).send(); 
+})
+
 //COMMENTS
 app.get("/comments", (req: Request, res: Response) => {
   res.json(db.comments);
@@ -222,6 +239,23 @@ app.patch("/comments/:id", (req: Request, res: Response) => {
   //response
   res.json(comment);
 });
+
+//delete comment
+app.delete('/comments/:id', (req: Request, res: Response) => {
+  //get that comment
+  const comment = db.comments.find(comment => comment.id === req.params.id); 
+
+  //verify 
+  if (!comment) {
+    return res.status(404).json({'error': "Requested comment does not exists"}); 
+  }
+
+  //remove it
+  db.comments = db.comments.filter(comment => comment.id !== req.params.id); 
+
+  //response
+  res.status(204).send(); 
+})
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
