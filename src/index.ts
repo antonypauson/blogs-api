@@ -10,6 +10,7 @@ app.use(express.json());
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello TypeScript World!");
 });
+
 //ARTICLES
 app.get("/articles", (req: Request, res: Response) => {
   res.json(db.articles);
@@ -78,6 +79,26 @@ app.patch("/articles/:id", (req: Request, res: Response) => {
   //response
   res.json(article);
 });
+
+//delete an article
+app.delete('/articles/:id', (req: Request, res: Response) => {
+  //find the article
+  const article = db.articles.find(article => article.id === req.params.id); 
+
+  //verify
+  if (!article) {
+    return res.status(404).json({error: 'Requested Article does not exist'}); 
+  }
+
+  //filter it out
+  //but also making it the new articles
+  db.articles = db.articles.filter(article => article.id !== req.params.id); 
+
+
+  //response is NO CONTENT anymore
+  res.status(204).send(); 
+
+})
 
 //USERS
 app.get("/users", (req: Request, res: Response) => {
