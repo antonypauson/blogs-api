@@ -1,0 +1,17 @@
+meta {
+  name: Update Article
+  type: http
+  seq: 1
+}
+
+patch {
+  url: http://localhost:3000/articles/a1
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "How I made the largest online retailer"
+  }
+}

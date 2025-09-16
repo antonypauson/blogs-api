@@ -1,0 +1,19 @@
+meta {
+  name: Create Comment
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3000/comments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "text": "Hey nice one", 
+    "authorId": "2",
+    "articleId": "a1"
+  }
+}
