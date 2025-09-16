@@ -52,6 +52,32 @@ app.post('/articles', (req: Request, res: Response) => {
   res.status(201).json(newArticle)
 })
 
+//path/update an article
+app.patch('/articles/:id', (req: Request, res: Response) => {
+  //find the article by id
+  const article = db.articles.find(article => article.id === req.params.id)
+
+  //make sure it exists
+  if (!article) {
+    return res.status(404).json({error: 'Article not found'}); 
+  }
+
+  //get the new title or body (or both) from req
+  const {title, body} = req.body; 
+
+  //update the article
+  if (title) {
+    article.title = title; 
+  }
+  if (body) {
+    article.body = body; 
+  }
+
+  //response
+  res.json(article); 
+
+})
+
 //USERS
 app.get("/users", (req: Request, res: Response) => {
   res.json(db.users);
