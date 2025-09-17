@@ -4,8 +4,10 @@ import { db } from "../db.js";
 const router = Router(); 
 //ARTICLES
 router.get("/", (req: Request, res: Response) => {
-  const articles = db.articles.map(article => 
-  (
+  const articles = db.articles.map(article => {
+  //find all the comments from "comments"
+  const comments = db.comments.filter(comment => comment.articleId === article.id)
+    return (
     {
       type: 'articles', 
       id: article.id,
@@ -13,8 +15,30 @@ router.get("/", (req: Request, res: Response) => {
         title: article.title, 
         body: article.body, 
       }, 
-    }
-  )); 
+      //RELATIONSHIPS
+      relationships: {
+      //author can be found directly 
+      // {id: 'a1', title: 'How I made Amazon', body: 'Amazon found opens about how he made the biggest online retialer in the world', authorId: '1'}
+      author: {
+        data: {
+          type: "users", 
+          id: article.authorId
+        }
+      },
+      //comments we got from "comments"
+      comments: {
+        data: 
+          comments.map(comment => (
+            {
+              type: "comments", 
+              id: comment.id,
+            }
+          ))
+      },      
+      }
+    }) 
+  }); 
+
   res.json({data: articles}); 
 });
 
@@ -22,6 +46,7 @@ router.get("/", (req: Request, res: Response) => {
 router.get("/:id", (req: Request, res: Response) => {
   const id = req.params.id;
   const article = db.articles.find((eachArticle) => eachArticle.id === id);
+  const comments = db.comments.filter(comment => comment.articleId === id); 
   if (article) {
     const formattedArticle = {
       type: 'articles', 
@@ -29,8 +54,29 @@ router.get("/:id", (req: Request, res: Response) => {
       attributes: {
         title: article.title, 
         body: article.body,
-      }
+      },
+      //RELATIONSHIPS
+      relationships: {
+        //AUTHOR
+        author: {
+          data: {
+            type: "users", 
+            id: article.authorId
+          }
+        },
+        //COMMENTS
+        comments: {
+          data: 
+          comments.map(comment => (
+            {
+              type: "comments", 
+              id: comment.id
+            }
+          ))
+        }
+      },
     }
+
     res.json({data: formattedArticle});
   } else {
     res.status(404).json({ error: "Article not found" });
