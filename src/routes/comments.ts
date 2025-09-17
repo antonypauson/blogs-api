@@ -5,7 +5,16 @@ const router = Router();
 
 //COMMENTS
 router.get("/", (req: Request, res: Response) => {
-  res.json(db.comments);
+  const comments = db.comments.map(comment => (
+    {
+      type: "comments", 
+      id: comment.id, 
+      attributes: {
+        text: comment.text
+      }
+    }
+  ))
+  res.json({data: comments});
 });
 
 //route parameter with id
@@ -13,7 +22,14 @@ router.get("/:id", (req: Request, res: Response) => {
   const id = req.params.id;
   const comment = db.comments.find((comment) => comment.id === id);
   if (comment) {
-    res.json(comment);
+    const formattedComment = {
+      type: "comments", 
+      id: comment.id, 
+      attributes: {
+        text: comment.text
+      }
+    }
+    res.json({data: formattedComment});
   } else {
     res.status(404).json({ error: "Comment not found" });
   }

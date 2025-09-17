@@ -5,7 +5,16 @@ const router = Router();
 
 //USERS
 router.get("/", (req: Request, res: Response) => {
-  res.json(db.users);
+  const users = db.users.map(user => (
+    {
+      type: "users", 
+      id: user.id, 
+      attributes: {
+        name: user.name
+      }
+    }
+  ))
+  res.json({data: users});
 });
 
 //route parameter with id
@@ -13,7 +22,14 @@ router.get("/:id", (req: Request, res: Response) => {
   const id = req.params.id;
   const user = db.users.find((user) => user.id === id);
   if (user) {
-    res.json(user);
+    const formattedUser = {
+      type: 'users', 
+      id: user.id, 
+      attributes: {
+        name: user.name
+      }
+    }
+    res.json({data: formattedUser});
   } else {
     res.status(404).json({ error: "User not found" });
   }

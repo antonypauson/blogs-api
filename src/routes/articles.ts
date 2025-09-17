@@ -4,7 +4,18 @@ import { db } from "../db.js";
 const router = Router(); 
 //ARTICLES
 router.get("/", (req: Request, res: Response) => {
-  res.json(db.articles);
+  const articles = db.articles.map(article => 
+  (
+    {
+      type: 'articles', 
+      id: article.id,
+      attributes: {
+        title: article.title, 
+        body: article.body, 
+      }, 
+    }
+  )); 
+  res.json({data: articles}); 
 });
 
 //route parameter with id
@@ -12,7 +23,15 @@ router.get("/:id", (req: Request, res: Response) => {
   const id = req.params.id;
   const article = db.articles.find((eachArticle) => eachArticle.id === id);
   if (article) {
-    res.json(article);
+    const formattedArticle = {
+      type: 'articles', 
+      id:  article.id, 
+      attributes: {
+        title: article.title, 
+        body: article.body,
+      }
+    }
+    res.json({data: formattedArticle});
   } else {
     res.status(404).json({ error: "Article not found" });
   }
