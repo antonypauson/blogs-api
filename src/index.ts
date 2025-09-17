@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { db } from "./db.js";
+import articlesRouter from './routes/articles.js'; 
 
 const app = express();
 const PORT = 3000;
@@ -11,94 +12,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello TypeScript World!");
 });
 
-//ARTICLES
-app.get("/articles", (req: Request, res: Response) => {
-  res.json(db.articles);
-});
-
-//route parameter with id
-app.get("/articles/:id", (req: Request, res: Response) => {
-  const id = req.params.id;
-  const article = db.articles.find((eachArticle) => eachArticle.id === id);
-  if (article) {
-    res.json(article);
-  } else {
-    res.status(404).json({ error: "Article not found" });
-  }
-});
-
-//post: new article
-app.post("/articles", (req: Request, res: Response) => {
-  //extract these from the request body
-  const { title, body, authorId } = req.body;
-
-  //make sure its there
-  if (!title || !body || !authorId) {
-    return res
-      .status(400)
-      .json({ error: "Some data from the client is missing" });
-  }
-
-  //create new article object
-  const newArticle = {
-    id: `a${Date.now()}`, //'a' because we need to use Date.now() as id for others
-    title: title,
-    body: body,
-    authorId: authorId,
-  };
-
-  //add it to db.
-  db.articles.push(newArticle);
-
-  //201: created
-  //then we display teh json of newArticle
-  res.status(201).json(newArticle);
-});
-
-//path/update an article
-app.patch("/articles/:id", (req: Request, res: Response) => {
-  //find the article by id
-  const article = db.articles.find((article) => article.id === req.params.id);
-
-  //make sure it exists
-  if (!article) {
-    return res.status(404).json({ error: "Article not found" });
-  }
-
-  //get the new title or body (or both) from req
-  const { title, body } = req.body;
-
-  //update the article
-  if (title) {
-    article.title = title;
-  }
-  if (body) {
-    article.body = body;
-  }
-
-  //response
-  res.json(article);
-});
-
-//delete an article
-app.delete('/articles/:id', (req: Request, res: Response) => {
-  //find the article
-  const article = db.articles.find(article => article.id === req.params.id); 
-
-  //verify
-  if (!article) {
-    return res.status(404).json({error: 'Requested Article does not exist'}); 
-  }
-
-  //filter it out
-  //but also making it the new articles
-  db.articles = db.articles.filter(article => article.id !== req.params.id); 
-
-
-  //response is NO CONTENT anymore
-  res.status(204).send(); 
-
-})
+app.use('/articles', articlesRouter); 
 
 //USERS
 app.get("/users", (req: Request, res: Response) => {
