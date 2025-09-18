@@ -134,16 +134,47 @@ router.patch("/:id", (req: Request, res: Response) => {
     return res.status(404).json({ error: `That user don't exist` });
   }
 
-  //take data from request
-  const { name } = req.body;
+  //take data from request data
+  const { attributes } = req.body.data;
 
   //update
-  if (name) {
-    user.name = name;
+  if (attributes.name !== undefined) {
+    user.name = attributes.name; 
+  }
+
+  //get all the comments + articles of that user
+  const userArticles = db.articles.filter(article => article.authorId === user.id); 
+  const userComments = db.comments.filter(comment => comment.authorId === user.id); 
+
+  //json:api user
+  const formattedUser = {
+    type: "users", 
+    id: user.id, 
+    attributes: {
+      name: user.name
+    }, 
+    relationships: {
+      articles: {
+        data: userArticles.map(article => (
+        {
+          type: "articles", 
+          id: article.id
+        }
+      ))
+      },
+      comments: {
+        data: userComments.map(comment => (
+          {
+            type: "comments", 
+            id: comment.id
+          }
+        ))
+      }
+    }
   }
 
   //response
-  res.json(user);
+  res.json({data: formattedUser});
 });
 
 //delete a user

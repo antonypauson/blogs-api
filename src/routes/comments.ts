@@ -146,16 +146,47 @@ router.patch("/:id", (req: Request, res: Response) => {
     return res.status(404).json({ error: "This comment does not exist" });
   }
 
-  //get text from request
-  const { text } = req.body;
+  //get text from request body data
+  const { attributes } = req.body.data;
 
   //update
-  if (text) {
-    comment.text = text;
+  if (attributes.text !== undefined) {
+    comment.text = attributes.text;
+  }
+
+  //author of the comment
+  const author = db.users.find(user => user.id === comment.authorId);
+  //article of that comment
+  const article = db.articles.find(article => article.id === comment.articleId); 
+  //json:api format comment
+  const formattedComment = {
+    type: "comments", 
+    id: comment.id, 
+    attributes: {
+      text: comment.text
+    }, 
+    relationships: {
+      author: {
+        data: 
+          author ? 
+          {
+            type: "users", 
+            id: author.id
+          } : null
+      }, 
+      article: {
+        data: 
+          article ? 
+          {
+            type: "articles", 
+            id: article.id
+          } : null
+      }
+    }
   }
 
   //response
-  res.json(comment);
+  res.json({data: formattedComment});
 });
 
 //delete comment
