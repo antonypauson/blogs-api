@@ -5,15 +5,39 @@ const router = Router();
 
 //COMMENTS
 router.get("/", (req: Request, res: Response) => {
-  const comments = db.comments.map(comment => (
+  const comments = db.comments.map(comment => {
+    //find the article of the comment
+    const article = db.articles.find(article => article.id === comment.articleId);
+
+    //find the user of the comment (author)
+    const author = db.users.find(user => user.id === comment.authorId); 
+
+    return (
     {
       type: "comments", 
       id: comment.id, 
       attributes: {
         text: comment.text
+      }, 
+      relationships: {
+        //if the author doesn't exist, its null
+        author: {
+          data: author ? 
+          {
+            type: "users",
+            id: author.id
+          } : null
+        }, 
+        article: {
+          data: article ? 
+          {
+            type: "articles", 
+            id: article.id
+          } : null
+        }
       }
     }
-  ))
+  )})
   res.json({data: comments});
 });
 
@@ -22,11 +46,32 @@ router.get("/:id", (req: Request, res: Response) => {
   const id = req.params.id;
   const comment = db.comments.find((comment) => comment.id === id);
   if (comment) {
+    //find the article of the comment
+    const article = db.articles.find(article => article.id === comment.articleId);
+
+    //find the user of the comment (author)
+    const author = db.users.find(user => user.id === comment.authorId); 
     const formattedComment = {
       type: "comments", 
       id: comment.id, 
       attributes: {
         text: comment.text
+      }, 
+      relationships: {
+        author: {
+          data: author ? 
+          {
+            type: "users", 
+            id: author.id
+          } : null
+        }, 
+        article: {
+          data: article ? 
+          {
+            type: "articles", 
+            id: article.id
+          } : null
+        }
       }
     }
     res.json({data: formattedComment});

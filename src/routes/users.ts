@@ -5,15 +5,38 @@ const router = Router();
 
 //USERS
 router.get("/", (req: Request, res: Response) => {
-  const users = db.users.map(user => (
+  const users = db.users.map(user => {
+    //find all the articles of the user
+    const articles = db.articles.filter(article => article.authorId === user.id); 
+
+    //find all the comments of the user
+    const comments = db.comments.filter(comments => comments.authorId === user.id); 
+
+  return (
     {
       type: "users", 
       id: user.id, 
       attributes: {
         name: user.name
+      }, 
+      relationships: {
+        articles: {
+          data: articles.map(articles => ({
+            type: "articles", 
+            id: articles.id,
+          }))
+        }, 
+        comments: {
+          data: comments.map(comment => (
+            {
+              type: "comments", 
+              id: comment.id
+            }
+          ))
+        }
       }
     }
-  ))
+  )})
   res.json({data: users});
 });
 
@@ -22,11 +45,33 @@ router.get("/:id", (req: Request, res: Response) => {
   const id = req.params.id;
   const user = db.users.find((user) => user.id === id);
   if (user) {
+    //find articles of the user
+    const articles = db.articles.filter(article => article.authorId === id); 
+    //find comments of the user
+    const comments = db.comments.filter(comment => comment.authorId === id); 
     const formattedUser = {
       type: 'users', 
       id: user.id, 
       attributes: {
         name: user.name
+      }, 
+      relationships: {
+        articles: {
+          data: articles.map(article => (
+            {
+              type: "articles", 
+              id: article.id
+            }
+          ))
+        }, 
+        comments: {
+          data: comments.map(comment => (
+            {
+              type: "comments", 
+              id: comment.id
+            }
+          )) 
+        }
       }
     }
     res.json({data: formattedUser});
