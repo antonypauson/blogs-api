@@ -144,19 +144,50 @@ router.patch("/:id", (req: Request, res: Response) => {
     return res.status(404).json({ error: "Article not found" });
   }
 
-  //get the new title or body (or both) from req
-  const { title, body } = req.body;
+  //get from req.body.data
+  const { attributes} = req.body.data;
 
   //update the article
-  if (title) {
-    article.title = title;
+  if (attributes &&
+    attributes.title
+  ) {
+    article.title = attributes.title;
   }
-  if (body) {
-    article.body = body;
+  if (attributes &&
+    attributes.body
+  ) {
+    article.body = attributes.body;
+  }
+
+  //find all the comments
+  const comments = db.comments.filter(comment => comment.articleId === article.id); 
+
+  //json:api response
+  const formattedArticle = {
+    type: "articles", 
+    id: article.id, 
+    attributes: {
+      title: article.title,
+      body: article.body
+    }, 
+    relationships: {
+      author: {
+        data: {
+          type: "users", 
+          id: article.authorId
+        }
+      }, 
+      comments: {
+        data: comments.map(comment => ({
+          type: "comments", 
+          id: comment.id
+        }))
+      }
+    }
   }
 
   //response
-  res.json(article);
+  res.json({data: formattedArticle});
 });
 
 //delete an article
