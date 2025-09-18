@@ -82,27 +82,58 @@ router.get("/:id", (req: Request, res: Response) => {
 
 //post: new comment
 router.post("/", (req: Request, res: Response) => {
-  //take data from client
-  const { text, authorId, articleId } = req.body;
+  //we need author and article (relationship)
+  //we need text (attribute)
+  const { attributes, relationships } = req.body.data;
 
   //verify its there
-  if (!text || !authorId || !articleId) {
+  if (!attributes ||
+    !relationships ||
+    !attributes.text ||
+    !relationships.author ||
+    !relationships.author.data ||
+    !relationships.article ||
+    !relationships.article.data
+  ) {
     return res.status(400).json({ error: "Data missing" });
   }
 
   //create comment object
   const newComment = {
     id: `c${Date.now()}`,
-    text: text,
-    authorId: authorId,
-    articleId: articleId,
+    text: attributes.text,
+    authorId: relationships.author.data.id,
+    articleId: relationships.article.data.id,
   };
 
-  //add it
+  //add it to db. 
   db.comments.push(newComment);
 
+  //json display
+  const newCommentJSONData = {
+    type: "comments", 
+    id: newComment.id, 
+    attributes: {
+      text: newComment.text
+    }, 
+    relationships: {
+      author: {
+        data: {
+          type: "users", 
+          id: newComment.authorId
+        }
+      }, 
+      article: {
+        data: {
+          type: "articles", 
+          id: newComment.articleId
+        }
+      }
+    }
+  }
+
   //output + status code
-  res.status(201).json(newComment);
+  res.status(201).json({data: newCommentJSONData});
 });
 
 //update comments

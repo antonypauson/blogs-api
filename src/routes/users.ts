@@ -82,25 +82,47 @@ router.get("/:id", (req: Request, res: Response) => {
 
 //post: new user
 router.post("/", (req: Request, res: Response) => {
-  //take name from the client
-  const { name } = req.body;
+  //take info from req.body.data
+  //dont need relationship, cause when a new user is created, 
+  //they won't have articles or comments
+  const {attributes} = req.body.data;
 
-  //verify its there
-  if (!name) {
+  //verify 
+  if (!attributes ||
+    !attributes.name
+  ) {
     return res.status(400).json({ error: "Name is missing" });
   }
 
   //create new user object
   const newUser = {
     id: `u${Date.now()}`,
-    name: name,
+    name: attributes.name
   };
 
-  //add it
+  //adding to db
   db.users.push(newUser);
 
+  //formatted json:api
+  const newUserJSONData = {
+    type: "users", 
+    id: newUser.id, 
+    attributes: {
+      name: newUser.name
+    },
+    //add relationships as emtpy 
+    relationships: {
+      articles: {
+        data: []
+      }, 
+      comments: {
+        data: []
+      }
+    }
+
+  }
   //output + status code
-  res.status(201).json(newUser);
+  res.status(201).json({data: newUserJSONData});
 });
 
 router.patch("/:id", (req: Request, res: Response) => {
