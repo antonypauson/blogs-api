@@ -85,30 +85,53 @@ router.get("/:id", (req: Request, res: Response) => {
 
 //post: new article
 router.post("/", (req: Request, res: Response) => {
-  //extract these from the request body
-  const { title, body, authorId } = req.body;
+  //extract attributes + relationships from the req.body.data
+  const { attributes, relationships } = req.body.data;
 
-  //make sure its there
-  if (!title || !body || !authorId) {
+  //make sure everything is there
+  if (!attributes || 
+    !relationships || 
+    !attributes.title ||
+    !attributes.body ||
+    !relationships.author ||
+    !relationships.author.data
+  ) {
     return res
       .status(400)
-      .json({ error: "Some data from the client is missing" });
+      .json({ error: "data from the client is missing" });
   }
 
   //create new article object
   const newArticle = {
     id: `a${Date.now()}`, //'a' because we need to use Date.now() as id for others
-    title: title,
-    body: body,
-    authorId: authorId,
+    title: attributes.title,
+    body: attributes.body,
+    authorId: relationships.author.data.id,
   };
 
   //add it to db.
   db.articles.push(newArticle);
 
+  //how this newArticle's json look
+  const newArticleJSONData = {
+    type: 'articles', 
+    id: newArticle.id, 
+    attributes: {
+      title: newArticle.title, 
+      body: newArticle.body
+    }, 
+    relationships: {
+      author: {
+        data: {
+          type: 'users', 
+          id: newArticle.authorId
+        }
+      }
+    }
+  }
   //201: created
-  //then we display teh json of newArticle
-  res.status(201).json(newArticle);
+  //then we display the json of newArticle
+  res.status(201).json({data: newArticleJSONData});
 });
 
 //path/update an article
