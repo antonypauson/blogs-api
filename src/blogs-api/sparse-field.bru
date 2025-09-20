@@ -1,0 +1,15 @@
+meta {
+  name: Sparse Field
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3000/articles/a1?fields[articles]=title
+  body: none
+  auth: none
+}
+
+params:query {
+  fields[articles]: title
+}
