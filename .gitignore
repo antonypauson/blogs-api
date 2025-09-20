@@ -1,6 +1,10 @@
 
 notes.md
 steps.md
+memory-bank.md
 error.txt
 node_modules
 package-lock.json
+.kiro
+.vscode
+.clinerules
