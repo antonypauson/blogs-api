@@ -1,12 +1,52 @@
 import { Router, Request, Response } from "express";
 import { db } from "../db.js";
 
+interface Resource {
+  type: string; 
+  id: string; 
+  attributes: object; 
+}
+
 const router = Router(); 
 //ARTICLES
 router.get("/", (req: Request, res: Response) => {
+  //?include
+  const include = req.query.include; 
+  const allIncluded: Resource[] = []; 
+
   const articles = db.articles.map(article => {
   //find all the comments from "comments"
   const comments = db.comments.filter(comment => comment.articleId === article.id)
+
+  if (typeof include === 'string') {
+    //if include 'author'
+    if (include.includes('author')) {
+      const author = db.users.find(user => user.id === article.authorId); 
+
+      if (author) {
+        allIncluded.push ({
+          type: 'users', 
+          id: author.id, 
+          attributes: {
+            name: author.name
+          }
+        })
+      }
+    }
+
+    if (include.includes('comments')) {
+      //if include 'comments'
+      allIncluded.push (...comments.map(comment => ({
+        type: 'comments', 
+        id: comment.id, 
+        attributes: {
+          text: comment.text
+        }
+      })))
+    }
+
+
+  }
     return (
     {
       type: 'articles', 
@@ -39,7 +79,28 @@ router.get("/", (req: Request, res: Response) => {
     }) 
   }); 
 
-  res.json({data: articles}); 
+  //there can be duplicates
+  //so lets remove it using Map
+  const includeMap = new Map(); 
+
+  allIncluded.forEach(each => {
+    const key = `${each.id}`; 
+    if (!includeMap.has(key)) {
+      includeMap.set(key, each); 
+    }
+  })
+  const included = Array.from(includeMap.values());
+  // console.log('De-duplicated included:', included); 
+
+  const response: {data: any; included?: any[]} = {
+    data: articles, 
+  }
+
+  if (included.length > 0) {
+    response.included = included; 
+  }
+
+  res.json(response); 
 });
 
 //route parameter with id
