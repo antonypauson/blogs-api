@@ -1,0 +1,15 @@
+meta {
+  name: Get Article with include query
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3000/articles/a1?include=comments,author
+  body: none
+  auth: none
+}
+
+params:query {
+  include: comments,author
+}

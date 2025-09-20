@@ -47,7 +47,45 @@ router.get("/:id", (req: Request, res: Response) => {
   const id = req.params.id;
   const article = db.articles.find((eachArticle) => eachArticle.id === id);
   const comments = db.comments.filter(comment => comment.articleId === id); 
+
+  //?include
+  const include = req.query.include; 
+  const included = []; 
+
+
   if (article) {
+    //if 'author' is the one included
+    if (typeof include === 'string' && include.includes('author')) {
+      const author = db.users.find(user => user.id === article.authorId); 
+      if (author) {
+        included.push({
+          type: 'users', 
+          id: author.id, 
+          attributes: {
+            name: author.name
+          }
+        })
+      }
+    }
+
+    //if 'comments' is the one included
+    if (typeof include === 'string' && include.includes('comments')) {
+      const comments = db.comments.filter(comment => comment.articleId === article.id); 
+      if (comments) {
+        comments.forEach(comment => included.push(
+          {
+            type: 'comments', 
+            id: comment.id, 
+            attributes: {
+              text: comment.text
+            }
+          }
+        ))
+      }
+    }
+
+    
+
     const formattedArticle = {
       type: 'articles', 
       id:  article.id, 
@@ -77,7 +115,18 @@ router.get("/:id", (req: Request, res: Response) => {
       },
     }
 
-    res.json({data: formattedArticle});
+    //defining how the 'response' will look like
+    const response: {data: any; included?: any[]} = {
+      data: formattedArticle, 
+    }
+
+    //add included array if its there. 
+    if (included.length > 0) {
+      response.included = included; 
+    }
+
+    res.json(response);
+
   } else {
     res.status(404).json({ error: "Article not found" });
   }
