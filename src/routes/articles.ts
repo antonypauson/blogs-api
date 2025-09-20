@@ -14,6 +14,14 @@ router.get("/", (req: Request, res: Response) => {
   const include = req.query.include;
   const allIncluded: Resource[] = [];
 
+  //space fields
+  const fieldKey = 'fields[articles]'; 
+  let requestFields: string[] | null = null; 
+
+  if (req.query[fieldKey] && typeof req.query[fieldKey] === 'string') {
+    requestFields = (req.query[fieldKey] as string).split(','); 
+  }
+
   const articles = db.articles.map((article) => {
     //find all the comments from "comments"
     const comments = db.comments.filter(
@@ -49,13 +57,32 @@ router.get("/", (req: Request, res: Response) => {
         );
       }
     }
+
+    //sparse field logic
+    const allAttributes: {[key:string]: string} = {
+      title: article.title,
+      body: article.body, 
+    }
+
+    let filteredAttributes: {[key:string]: string} = {}; 
+
+    if (requestFields && requestFields.length > 0) {
+      requestFields.forEach(field => {
+        if (field in allAttributes) {
+          filteredAttributes[field] = allAttributes[field]; 
+        }
+      })
+    } else {
+      //no sparse field. 
+      filteredAttributes = allAttributes
+    }
+
+
+  
     return {
       type: "articles",
       id: article.id,
-      attributes: {
-        title: article.title,
-        body: article.body,
-      },
+      attributes: filteredAttributes, 
       //RELATIONSHIPS
       relationships: {
         //author can be found directly
@@ -82,7 +109,7 @@ router.get("/", (req: Request, res: Response) => {
   const includeMap = new Map();
 
   allIncluded.forEach((each) => {
-    const key = `${each.id}`;
+    const key = `${each.id}-${each.id}`;
     if (!includeMap.has(key)) {
       includeMap.set(key, each);
     }

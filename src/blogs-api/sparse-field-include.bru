@@ -1,0 +1,16 @@
+meta {
+  name: Sparse Field + Include
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3000/articles/?fields[articles]=body&include=author
+  body: none
+  auth: none
+}
+
+params:query {
+  fields[articles]: body
+  include: author
+}
